@@ -276,20 +276,22 @@
     overflow: hidden;
   }
 
-  /* Particles */
+  /* Particles / Stars */
   .hero-particles { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
   .particle {
     position: absolute;
-    border-radius: 50%;
-    background: var(--accent);
+    color: var(--accent);
+    font-size: var(--sz, 14px);
+    line-height: 1;
     opacity: 0;
+    user-select: none;
     animation: floatParticle var(--dur, 6s) var(--delay, 0s) ease-in-out infinite;
   }
   @keyframes floatParticle {
-    0% { opacity: 0; transform: translateY(0) scale(0.5); }
-    20% { opacity: var(--op, 0.4); }
-    80% { opacity: var(--op, 0.4); }
-    100% { opacity: 0; transform: translateY(-120px) scale(1.2); }
+    0%   { opacity: 0; transform: translateY(0) rotate(0deg) scale(0.6); }
+    20%  { opacity: var(--op, 0.5); }
+    80%  { opacity: var(--op, 0.5); }
+    100% { opacity: 0; transform: translateY(-100px) rotate(180deg) scale(1.1); }
   }
 
   .hero-decor { position: absolute; border-radius: 50%; pointer-events: none; }
@@ -328,12 +330,18 @@
   .hero-subtitle { font-size: clamp(16px, 1.6vw, 20px); color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
   .hero-tezisy { display: flex; flex-direction: column; gap: 10px; margin-bottom: 40px; }
   .hero-tezis {
-    display: flex; align-items: center; gap: 10px;
+    display: flex; align-items: center; gap: 12px;
     font-size: 14px; color: var(--dark); font-weight: 500;
     transition: transform 0.25s ease;
   }
   .hero-tezis:hover { transform: translateX(6px); }
-  .hero-tezis::before { content: ''; display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+  .hero-tezis::before {
+    content: '✦';
+    color: var(--accent);
+    font-size: 13px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
   .hero-cta { display: flex; flex-wrap: wrap; gap: 16px; }
 
   /* ─── HERO PHOTO ─── */
@@ -344,6 +352,8 @@
     position: relative;
     border-radius: 60% 40% 55% 45% / 50% 45% 55% 50%;
     overflow: hidden;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    mask-image: radial-gradient(white, black);
     aspect-ratio: 3/4;
     box-shadow: 0 40px 80px rgba(28,43,58,0.18), 0 0 0 1px rgba(200,169,110,0.1);
     transform-style: preserve-3d;
@@ -361,7 +371,7 @@
     width: 100%; height: 100%;
     object-fit: cover; object-position: center top; display: block;
     transition: transform 0.1s linear;
-    transform: scale(1.05);
+    transform: scale(1.0);
   }
   .hero-photo-overlay {
     position: absolute; inset: 0;
@@ -604,8 +614,14 @@
     .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; text-align: center; gap: 40px; }
     .hero-eyebrow { margin: 0 auto 20px; }
     .hero-cta { justify-content: center; }
-    .hero-tezisy { align-items: center; }
-    .hero-photo-inner { max-width: 300px; margin: 0 auto; }
+    .hero-tezisy { align-items: flex-start; text-align: left; }
+    .hero-photo-inner { max-width: 280px; margin: 0 auto; }
+    .hero-photo-frame {
+      animation: none !important;
+      border-radius: 50% 50% 50% 50% / 50% 50% 50% 50% !important;
+    }
+    .hero-photo-frame img { transform: none !important; }
+    .photo-orbit { display: none; }
 
     section { padding: 72px 24px; }
 
@@ -939,12 +955,12 @@ const observer = new IntersectionObserver((entries) => {
 }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
 
-// ─── PARALLAX HERO IMG ───
+// ─── PARALLAX HERO IMG (только на десктопе) ───
 const heroImg = document.getElementById('heroImg');
-if (heroImg) {
+if (heroImg && window.matchMedia('(hover: hover) and (min-width: 901px)').matches) {
   window.addEventListener('scroll', () => {
     if (window.scrollY < window.innerHeight * 1.5) {
-      heroImg.style.transform = `translateY(${window.scrollY * 0.2}px) scale(1.05)`;
+      heroImg.style.transform = `translateY(${window.scrollY * 0.15}px)`;
     }
   }, { passive: true });
 }
@@ -1015,21 +1031,23 @@ document.querySelectorAll('.btn, .btn-save-big').forEach(btn => {
   });
 });
 
-// ─── PARTICLES in HERO ───
-(function createParticles() {
+// ─── STARS in HERO ───
+(function createStars() {
   const container = document.getElementById('heroParticles');
   if (!container) return;
-  for (let i = 0; i < 18; i++) {
+  const stars = ['✦', '✧', '⋆', '✦', '✧'];
+  for (let i = 0; i < 14; i++) {
     const p = document.createElement('div');
     p.className = 'particle';
-    const size = Math.random() * 6 + 3;
+    p.textContent = stars[i % stars.length];
+    const sz = (10 + Math.random() * 10) + 'px';
     p.style.cssText = `
-      width:${size}px;height:${size}px;
-      left:${Math.random() * 100}%;
-      top:${40 + Math.random() * 55}%;
-      --dur:${5 + Math.random() * 8}s;
-      --delay:${Math.random() * 6}s;
-      --op:${0.15 + Math.random() * 0.3};
+      left:${5 + Math.random() * 90}%;
+      top:${30 + Math.random() * 65}%;
+      --sz:${sz};
+      --dur:${6 + Math.random() * 8}s;
+      --delay:${Math.random() * 7}s;
+      --op:${0.25 + Math.random() * 0.35};
     `;
     container.appendChild(p);
   }
